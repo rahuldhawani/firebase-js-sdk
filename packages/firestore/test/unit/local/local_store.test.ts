@@ -1250,15 +1250,15 @@ function genericLocalStoreTests(
 
   it('computes highest unacknowledged batch id correctly', () => {
     return expectLocalStore()
-    .toReturnHighestUnacknowledgeBatchId(BATCHID_UNKNOWN)
-    .afterMutations([setMutation('foo/bar', {})])
-    .toReturnHighestUnacknowledgeBatchId(1)
-    .afterMutations([patchMutation('foo/bar', {'abc': 123})])
-    .toReturnHighestUnacknowledgeBatchId(2)
-    .afterAcknowledgingMutation({documentVersion: 1})
-    .toReturnHighestUnacknowledgeBatchId(2)
-    .afterRejectingMutation()
-    .toReturnHighestUnacknowledgeBatchId(BATCHID_UNKNOWN)
-    .finish();
+      .toReturnHighestUnacknowledgeBatchId(BATCHID_UNKNOWN)
+      .afterMutations([setMutation('foo/bar', {})])
+      .toReturnHighestUnacknowledgeBatchId(1)
+      .afterMutations([patchMutation('foo/bar', { abc: 123 })])
+      .toReturnHighestUnacknowledgeBatchId(2)
+      .afterAcknowledgingMutation({ documentVersion: 1 })
+      .toReturnHighestUnacknowledgeBatchId(2)
+      .afterRejectingMutation()
+      .toReturnHighestUnacknowledgeBatchId(BATCHID_UNKNOWN)
+      .finish();
   });
 }

@@ -611,13 +611,16 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
 
   async registerPendingWritesCallback(callback: Deferred<void>): Promise<void> {
     if (!this.remoteStore.canUseNetwork()) {
-        log.debug(LOG_TAG, "The network is disabled. The task returned by " +
-        "'awaitPendingWrites()' will not complete until the network is enabled.");
+      log.debug(
+        LOG_TAG,
+        'The network is disabled. The task returned by ' +
+          "'awaitPendingWrites()' will not complete until the network is enabled."
+      );
     }
 
     const largestBatchId = await this.localStore.getHighestUnacknowledgedBatchId();
 
-    if(largestBatchId === BATCHID_UNKNOWN) {
+    if (largestBatchId === BATCHID_UNKNOWN) {
       // Trigger the callback right away if there is no pending writes at the moment.
       callback.resolve();
       return Promise.resolve();
@@ -640,7 +643,12 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
   private failOutstandingPendingWritesCallbacks(): void {
     this.pendingWritesCallbacks.forEach(callbacks => {
       callbacks.forEach(callback => {
-        callback.reject(new FirestoreError(Code.CANCELLED, "'waitForPendingWrites' task is cancelled due to User change."));
+        callback.reject(
+          new FirestoreError(
+            Code.CANCELLED,
+            "'waitForPendingWrites' task is cancelled due to User change."
+          )
+        );
       });
     });
 

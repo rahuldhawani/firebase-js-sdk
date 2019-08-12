@@ -178,7 +178,9 @@ export class MemoryMutationQueue implements MutationQueue {
   }
 
   getHighestUnacknowledgedBatchId(): PersistencePromise<BatchId> {
-    return PersistencePromise.resolve(this.mutationQueue.length === 0 ? BATCHID_UNKNOWN : this.nextBatchId - 1);
+    return PersistencePromise.resolve(
+      this.mutationQueue.length === 0 ? BATCHID_UNKNOWN : this.nextBatchId - 1
+    );
   }
 
   getAllMutationBatches(

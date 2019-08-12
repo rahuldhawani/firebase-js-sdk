@@ -493,7 +493,7 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
    * acknowledged by the backend.
    */
   waitForPendingWrites(): Promise<void> {
-    return Promise.resolve();
+    return this._firestoreClient!.waitForPendingWrites();
   }
 
   ensureClientConfigured(): FirestoreClient {

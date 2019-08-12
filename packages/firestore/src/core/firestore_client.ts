@@ -528,7 +528,12 @@ export class FirestoreClient {
    */
   waitForPendingWrites(): Promise<void> {
     this.verifyNotShutdown();
-    return Promise.resolve();
+
+    const deferred = new Deferred<void>();
+    this.asyncQueue.enqueueAndForget(() => {
+      return this.syncEngine.registerPendingWritesCallback(deferred);
+    });
+    return deferred.promise;
   }
 
   listen(

@@ -450,6 +450,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
       (this.isPrimary && source === OnlineStateSource.RemoteStore) ||
       (!this.isPrimary && source === OnlineStateSource.SharedClientState)
     ) {
+      this.assertSubscribed('applyOnlineStateChange()');
       const newViewSnapshots = [] as ViewSnapshot[];
       this.queryViewsByQuery.forEach((query, queryView) => {
         const viewChange = queryView.view.applyOnlineStateChange(onlineState);
@@ -600,6 +601,18 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
     } catch (error) {
       await ignoreIfPrimaryLeaseLoss(error);
     }
+  }
+
+  registerPendingWritesCallback(callback: Deferred<void>): void {
+
+  }
+
+  private triggerPendingWritesCallbacks(batchId: BatchId): void {
+
+  }
+
+  private failOutstandingPendingWritesCallbacks(): void {
+
   }
 
   private addMutationCallback(

@@ -27,6 +27,7 @@ import { query } from '../../util/api_helpers';
 import { Deferred } from '../../util/promise';
 import { EventsAccumulator } from '../util/events_accumulator';
 import firebase from '../util/firebase_export';
+import { DEFAULT_PROJECT_ID, waitForPendingWrites } from '../util/helpers';
 import {
   apiDescribe,
   arrayContainsAnyOp,
@@ -37,8 +38,12 @@ import {
   withTestDbs,
   withTestDoc,
   withTestDocAndInitialData,
-  DEFAULT_SETTINGS
+  DEFAULT_SETTINGS,
+  waitForPendingWrites,
+  withTestDbsSettings
 } from '../util/helpers';
+import { EmptyCredentialsProvider, CredentialChangeListener } from '../../../src/api/credentials';
+import { User } from '../../../src/auth/user';
 
 // tslint:disable:no-floating-promises
 
@@ -1118,6 +1123,66 @@ apiDescribe('Database', (persistence: boolean) => {
       expect(() => {
         firestore.doc(docRef.path).set({ foo: 'bar' });
       }).to.throw();
+    });
+  });
+
+  it.only('waitForPendingWrites should resolve as expected', async () => {
+    await withTestDoc(persistence, async docRef => {
+      const firestore = docRef.firestore;
+      await firestore.disableNetwork();
+
+      const awaitPendingWrites1 = waitForPendingWrites(firestore);
+      const pendingWrites = docRef.set({foo: 'bar'});
+      const awaitPendingWrites2 = waitForPendingWrites(firestore);
+
+    // `awaitsPendingWrites1` resolves immediately because there are no pending writes at
+    // the time it is created.
+    await awaitPendingWrites1;
+
+    await firestore.enableNetwork();
+    await pendingWrites;
+    await awaitPendingWrites2;
+    });
+  });
+
+  it.only('waitForPendingWrites should fail when user changes', async () => {
+    const settings : any = DEFAULT_SETTINGS;
+    class MockCredentialsProvider extends EmptyCredentialsProvider {
+
+      private listener: CredentialChangeListener | null = null;
+
+      changeUserTo(user: User) {
+        this.listener!(user);
+      }
+
+      setChangeListener(listener: CredentialChangeListener) {
+        super.setChangeListener(listener);
+        this.listener = listener;
+      }
+    }
+
+    const mockCredentialsProvider = new MockCredentialsProvider();
+    settings.client = mockCredentialsProvider;
+    await withTestDbsSettings(persistence, DEFAULT_PROJECT_ID, settings, 1, async dbs => {
+      const db = dbs[0];
+      
+      await db.disableNetwork();
+      const pendingWrite = db.doc('abc/123').set({foo : 'bar'});
+      const awaitPendingWrite = waitForPendingWrites(db);
+
+      mockCredentialsProvider.changeUserTo(new User('user_1'));
+
+      await awaitPendingWrite;
+    });
+  });
+
+  it.only('waitForPendingWrites resolves immediately when offline and no pending writes', async () => {
+    await withTestDoc(persistence, async docRef => {
+      const firestore = docRef.firestore;
+      await firestore.disableNetwork();
+
+      const awaitPendingWrites = waitForPendingWrites(firestore);
+    await awaitPendingWrites;
     });
   });
 });

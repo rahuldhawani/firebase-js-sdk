@@ -492,7 +492,7 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
    * @return A `Promise` which resolves when all currently pending writes have been
    * acknowledged by the backend.
    */
-  waitForPendingWrites(): Promise<void> {
+  _waitForPendingWrites(): Promise<void> {
     return this._firestoreClient!.waitForPendingWrites();
   }
 
